@@ -127,8 +127,8 @@ modkey = "Mod4"
 
 -- レイアウト
 awful.layout.layouts = {
-    awful.layout.suit.floating,
     awful.layout.suit.tile,
+    awful.layout.suit.floating,
     awful.layout.suit.max,
     awful.layout.suit.magnifier,
 }
@@ -211,10 +211,24 @@ echo "=================================================="
 echo " ✅ Setup Complete!"
 echo "=================================================="
 echo ""
+echo "=== Setting system locale to Japanese... ==="
+sudo apt install -y locales
+sudo sed -i 's/# ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
+sudo locale-gen
+sudo update-locale LANG=ja_JP.UTF-8
+
+echo ""
 echo "Next steps:"
 echo "1. Reboot: sudo reboot"
-echo "2. Select awesome at login screen"
-echo "3. Japanese input: Ctrl+Space"
+echo "2. At login screen, select 'awesome' session"
+echo "3. After login, do the following to enable Japanese input:"
+echo "   - Run: im-config and choose 'fcitx'!!!"
+echo "   - Run: fcitx-configtool and add 'Mozc (Japanese)'!!!"
+echo ""
+echo "   You can then switch input method with Ctrl+Space"
+echo ""
+echo "System locale has been changed to Japanese (ja_JP.UTF-8)"
+echo "If it does not take effect, reboot once"
 echo ""
 echo "Key bindings:"
 echo "- Mod4 + Enter: Terminal"

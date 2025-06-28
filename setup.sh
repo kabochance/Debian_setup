@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Debian + awesome環境自動セットアップスクリプト
-# 使用法: curl -sSL https://github.com/kabochance/Debian_setup/raw/main/setup.sh | bash
+# 使用法: 
+#   wget -qO- https://github.com/kabochance/Debian_setup/raw/main/setup.sh | bash
+# または:
+#   wget https://github.com/kabochance/Debian_setup/raw/main/setup.sh && chmod +x setup.sh && ./setup.sh
 
 set -e  # エラー時に停止
 

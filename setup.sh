@@ -127,8 +127,8 @@ modkey = "Mod4"
 
 -- レイアウト
 awful.layout.layouts = {
-    awful.layout.suit.tile,
     awful.layout.suit.floating,
+    awful.layout.suit.tile,
     awful.layout.suit.max,
     awful.layout.suit.magnifier,
 }
@@ -160,18 +160,21 @@ end)
 
 -- キーバインド
 globalkeys = gears.table.join(
-    -- アプリケーション起動
     awful.key({ modkey }, "Return", function () awful.spawn(terminal) end),
     awful.key({ modkey }, "e", function () awful.spawn("kate") end),
     awful.key({ modkey }, "f", function () awful.spawn("alacritty -e ranger") end),
     awful.key({ modkey }, "w", function () awful.spawn("firefox") end),
-    awful.key({ modkey }, "q", function () awful.spawn("bash " .. os.getenv("HOME") .. "/start-cq-editor.sh") end),
-    
+
+    -- CQ-editor: 仮想環境をアクティベートして直接起動
+    awful.key({ modkey }, "q", function ()
+        awful.spawn("bash -c 'source /home/hideya/cq-editor-env/bin/activate && cq-editor'")
+    end),
+
     -- Alt+F4でアプリケーション終了
     awful.key({ "Mod1" }, "F4", function () 
         if client.focus then client.focus:kill() end
     end),
-    
+
     -- 音量調整
     awful.key({}, "XF86AudioRaiseVolume", function()
         awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%")
@@ -182,7 +185,7 @@ globalkeys = gears.table.join(
     awful.key({}, "XF86AudioMute", function()
         awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
     end),
-    
+
     -- システム
     awful.key({ modkey, "Control" }, "r", awesome.restart),
     awful.key({ modkey, "Shift"   }, "q", awesome.quit),
@@ -203,6 +206,7 @@ awful.rules.rules = {
 -- 自動起動
 awful.spawn.with_shell("~/.config/awesome/autostart.sh")
 RC_EOF
+
 
 echo "=== Enabling LightDM... ==="
 sudo systemctl enable lightdm

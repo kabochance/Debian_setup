@@ -32,6 +32,8 @@ sudo apt install -y \
     pulseaudio pavucontrol \
     dunst xclip parcellite \
     bluez blueman \
+    xfce4-power-manager \
+    udisks2 udiskie \
     python3 python3-pip python3-venv git \
     build-essential cmake
 
@@ -86,6 +88,8 @@ pulseaudio --start &
 dunst &
 parcellite &
 blueman-applet &
+udiskie --tray &
+xfce4-power-manager &
 AUTO_EOF
 chmod +x ~/.config/awesome/autostart.sh
 

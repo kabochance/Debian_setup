@@ -71,15 +71,6 @@ if [ ! -d ~/cq-editor-env ]; then
     deactivate
 fi
 
-echo "=== Creating CQ-editor launch script... ==="
-cat > ~/start-cq-editor.sh << 'CQ_EOF'
-#!/bin/bash
-cd ~
-source ~/cq-editor-env/bin/activate
-cq-editor &
-CQ_EOF
-chmod +x ~/start-cq-editor.sh
-
 echo "=== Configuring awesome... ==="
 mkdir -p ~/.config/awesome
 if [ ! -f ~/.config/awesome/rc.lua ]; then

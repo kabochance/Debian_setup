@@ -15,7 +15,7 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
   - NetworkManager (ネットワーク管理)
   - PulseAudio + pavucontrol (音量調整)
   - dunst (通知システム)
-  - clipit (クリップボード管理)
+  - Diodon (クリップボード管理)
   - blueman (Bluetooth管理)
   - udiskie (自動マウント)
   - 電源管理ツール
@@ -25,7 +25,7 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
 ### ワンライナーでインストール
 
 ```bash
-wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh | bash
+wget -O - https://raw.githubusercontent.com/kabochance/Debian_setup/main/setup.sh | bash
 ```
 
 ### または手動でダウンロード
@@ -112,6 +112,15 @@ systemctl status NetworkManager
 
 設定ファイル: `~/.config/dunst/dunstrc`
 
+## やること
+CAD-Query,CQ-editorのインストール
+ショートカットで仮想環境作成とCQ-editor起動の割当
+スライサー
+システムを日本語に＆ディレクトリの名前変更
+Alt+F4で閉じる
+ROCm
+Ollama
+StableD
 
 
 ## 更新履歴

@@ -1,242 +1,306 @@
 #!/bin/bash
 
-# Debian + awesome environment auto setup script
-# Usage: 
-#   wget -qO- https://github.com/kabochance/Debian_setup/raw/main/setup.sh | bash
-# or:
-#   wget https://github.com/kabochance/Debian_setup/raw/main/setup.sh && chmod +x setup.sh && ./setup.sh
+# Debian Awesome WM Environment Setup Script
+# Usage: wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh | bash
 
-set -e  # Stop on error
+set -e
 
-echo "=================================================="
-echo " Debian + awesome Environment Auto Setup"
-echo " https://github.com/kabochance/Debian_setup"
-echo "=================================================="
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Confirmation
-read -p "Start setup? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Setup cancelled."
+# Logging function
+log() {
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
+}
+
+warn() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${NC} $1"
     exit 1
+}
+
+# Check if running as root
+if [ "$EUID" -eq 0 ]; then
+    error "Please do not run this script as root. Run as a regular user with sudo privileges."
 fi
 
-echo "=== Updating system... ==="
+# Check if sudo is available
+if ! command -v sudo &> /dev/null; then
+    error "sudo is required but not installed. Please install sudo first."
+fi
+
+# Check if running on Debian
+if ! grep -q "Debian" /etc/os-release; then
+    warn "This script is designed for Debian. Other distributions may not work correctly."
+    read -p "Do you want to continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+log "Starting Debian Awesome WM environment setup..."
+
+# Update system
+log "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
-echo "=== Installing basic packages... ==="
-sudo apt install -y \
-    xorg awesome lightdm \
-    alacritty kate ranger firefox-esr \
-    network-manager network-manager-gnome \
-    pulseaudio pavucontrol \
-    dunst xclip parcellite \
-    bluez blueman \
-    python3 python3-pip python3-venv git \
-    build-essential cmake
+# Install basic packages
+log "Installing basic packages..."
+sudo apt install -y curl wget git build-essential
 
-echo "=== Setting up Japanese environment... ==="
-sudo apt install -y \
-    fonts-noto-cjk fonts-noto-cjk-extra \
-    fonts-takao fonts-vlgothic \
-    fcitx fcitx-mozc fcitx-config-gtk im-config
+# Install X Window System and awesome WM
+log "Installing X Window System and awesome WM..."
+sudo apt install -y xorg lightdm awesome
 
-echo "=== Setting up ranger preview... ==="
-sudo apt install -y \
-    w3m w3m-img highlight atool \
-    caca-utils poppler-utils mediainfo \
-    libimage-exiftool-perl
+# Install Japanese fonts
+log "Installing Japanese fonts..."
+sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-takao fonts-liberation fonts-noto-color-emoji
 
-echo "=== Configuring environment variables... ==="
-if ! grep -q "GTK_IM_MODULE=fcitx" ~/.bashrc; then
-    echo 'export GTK_IM_MODULE=fcitx' >> ~/.bashrc
-    echo 'export QT_IM_MODULE=fcitx' >> ~/.bashrc
-    echo 'export XMODIFIERS=@im=fcitx' >> ~/.bashrc
-fi
+# Configure Japanese locale
+log "Configuring Japanese locale..."
+sudo apt install -y locales
+echo "ja_JP.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+sudo locale-gen
 
-echo "=== Configuring ranger... ==="
-if [ ! -f ~/.config/ranger/rc.conf ]; then
-    ranger --copy-config=all
-fi
-sed -i 's/set preview_files false/set preview_files true/' ~/.config/ranger/rc.conf 2>/dev/null || true
-sed -i 's/set preview_images false/set preview_images true/' ~/.config/ranger/rc.conf 2>/dev/null || true
+# Install fcitx for Japanese input
+log "Installing fcitx for Japanese input..."
+sudo apt install -y fcitx fcitx-mozc fcitx-config-gtk fcitx-frontend-gtk2 fcitx-frontend-gtk3 fcitx-frontend-qt4 fcitx-frontend-qt5
 
-echo "=== Setting up CQ-editor... ==="
-if [ ! -d ~/cq-editor-env ]; then
-    python3 -m venv ~/cq-editor-env
-    source ~/cq-editor-env/bin/activate
-    pip install --upgrade pip
-    pip install cadquery
-    pip install git+https://github.com/CadQuery/CQ-editor.git
-    deactivate
-fi
+# Install applications
+log "Installing applications..."
+sudo apt install -y alacritty kate krusader kio-extras firefox-esr
 
-echo "=== Creating CQ-editor launch script... ==="
-cat > ~/start-cq-editor.sh << 'CQ_EOF'
-#!/bin/bash
-cd ~
-source ~/cq-editor-env/bin/activate
-cq-editor &
-CQ_EOF
-chmod +x ~/start-cq-editor.sh
+# Install system management tools
+log "Installing system management tools..."
+sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst clipit bluetooth bluez bluez-tools blueman acpi acpi-support laptop-mode-tools udisks2 udiskie pcmanfm
 
-echo "=== Configuring awesome... ==="
+# Install additional useful tools
+log "Installing additional tools..."
+sudo apt install -y htop neofetch scrot feh
+
+# Create awesome configuration directory
+log "Setting up awesome WM configuration..."
 mkdir -p ~/.config/awesome
-if [ ! -f ~/.config/awesome/rc.lua ]; then
-    cp /etc/xdg/awesome/rc.lua ~/.config/awesome/
-fi
+cp /etc/xdg/awesome/rc.lua ~/.config/awesome/
 
-echo "=== Creating autostart script... ==="
-cat > ~/.config/awesome/autostart.sh << 'AUTO_EOF'
-#!/bin/bash
-fcitx &
-nm-applet &
-pulseaudio --start &
-dunst &
-parcellite &
-blueman-applet &
-AUTO_EOF
-chmod +x ~/.config/awesome/autostart.sh
+# Create alacritty configuration
+log "Setting up alacritty configuration..."
+mkdir -p ~/.config/alacritty
+cat > ~/.config/alacritty/alacritty.yml << 'EOF'
+window:
+  opacity: 0.9
+  
+font:
+  normal:
+    family: Noto Sans Mono CJK JP
+  size: 12
 
-echo "=== Generating awesome config file... ==="
-cat > ~/.config/awesome/rc.lua << 'RC_EOF'
--- Generated by Debian_setup
-pcall(require, "luarocks.loader")
-local gears = require("gears")
-local awful = require("awful")
-require("awful.autofocus")
-local wibox = require("wibox")
-local beautiful = require("beautiful")
-local naughty = require("naughty")
-local hotkeys_popup = require("awful.hotkeys_popup")
+colors:
+  primary:
+    background: '0x1e1e1e'
+    foreground: '0xffffff'
+EOF
 
--- エラーハンドリング
-if awesome.startup_errors then
-    naughty.notify({ preset = naughty.config.presets.critical,
-                     title = "Oops, there were errors during startup!",
-                     text = awesome.startup_errors })
-end
+# Create dunst configuration
+log "Setting up dunst configuration..."
+mkdir -p ~/.config/dunst
+cat > ~/.config/dunst/dunstrc << 'EOF'
+[global]
+    font = Noto Sans CJK JP 10
+    allow_markup = yes
+    format = "%s\n%b"
+    sort = yes
+    indicate_hidden = yes
+    alignment = left
+    bounce_freq = 0
+    show_age_threshold = 60
+    word_wrap = yes
+    ignore_newline = no
+    geometry = "300x5-30+20"
+    shrink = no
+    transparency = 0
+    idle_threshold = 120
+    monitor = 0
+    follow = mouse
+    sticky_history = yes
+    history_length = 20
+    show_indicators = yes
+    line_height = 0
+    separator_height = 2
+    padding = 8
+    horizontal_padding = 8
+    separator_color = frame
+    startup_notification = false
+    dmenu = /usr/bin/dmenu -p dunst:
+    browser = /usr/bin/firefox
+    icon_position = left
+    max_icon_size = 32
 
--- テーマ
-beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+[urgency_low]
+    background = "#222222"
+    foreground = "#888888"
+    timeout = 10
 
--- 変数定義
-terminal = "alacritty"
-editor = "kate"
-modkey = "Mod4"
+[urgency_normal]
+    background = "#285577"
+    foreground = "#ffffff"
+    timeout = 10
 
--- レイアウト
-awful.layout.layouts = {
-    awful.layout.suit.tile,
-    awful.layout.suit.floating,
-    awful.layout.suit.max,
-    awful.layout.suit.magnifier,
-}
+[urgency_critical]
+    background = "#900000"
+    foreground = "#ffffff"
+    timeout = 0
+EOF
 
--- Wibar
-mytextclock = wibox.widget.textclock()
+# Set up environment variables for fcitx
+log "Setting up fcitx environment variables..."
+{
+    echo 'export GTK_IM_MODULE=fcitx'
+    echo 'export QT_IM_MODULE=fcitx'
+    echo 'export XMODIFIERS=@im=fcitx'
+    echo 'export DefaultIMModule=fcitx'
+} >> ~/.bashrc
 
-awful.screen.connect_for_each_screen(function(s)
-    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
-    
-    s.mytaglist = awful.widget.taglist {
-        screen  = s,
-        filter  = awful.widget.taglist.filter.all,
-    }
-    
-    s.mytasklist = awful.widget.tasklist {
-        screen  = s,
-        filter  = awful.widget.tasklist.filter.currenttags,
-    }
-    
-    s.mywibox = awful.wibar({ position = "top", screen = s })
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { layout = wibox.layout.fixed.horizontal, s.mytaglist },
-        s.mytasklist,
-        { layout = wibox.layout.fixed.horizontal, mytextclock },
-    }
-end)
+# Create awesome WM configuration with auto-start applications
+log "Configuring awesome WM with auto-start applications..."
+cat >> ~/.config/awesome/rc.lua << 'EOF'
 
--- キーバインド
-globalkeys = gears.table.join(
-    -- アプリケーション起動
-    awful.key({ modkey }, "Return", function () awful.spawn(terminal) end),
-    awful.key({ modkey }, "e", function () awful.spawn("kate") end),
-    awful.key({ modkey }, "f", function () awful.spawn("alacritty -e ranger") end),
-    awful.key({ modkey }, "w", function () awful.spawn("firefox") end),
-    awful.key({ modkey }, "q", function () awful.spawn("bash " .. os.getenv("HOME") .. "/start-cq-editor.sh") end),
-    
-    -- Alt+F4でアプリケーション終了
-    awful.key({ "Mod1" }, "F4", function () 
-        if client.focus then client.focus:kill() end
-    end),
-    
-    -- 音量調整
-    awful.key({}, "XF86AudioRaiseVolume", function()
-        awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%")
-    end),
-    awful.key({}, "XF86AudioLowerVolume", function()
-        awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%")
-    end),
-    awful.key({}, "XF86AudioMute", function()
-        awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
-    end),
-    
-    -- システム
-    awful.key({ modkey, "Control" }, "r", awesome.restart),
-    awful.key({ modkey, "Shift"   }, "q", awesome.quit),
-    awful.key({ modkey }, "r", function () awful.screen.focused().mypromptbox:run() end)
+-- Auto-start applications
+awful.spawn.with_shell("nm-applet")
+awful.spawn.with_shell("volumeicon")
+awful.spawn.with_shell("clipit")
+awful.spawn.with_shell("blueman-applet")
+awful.spawn.with_shell("udiskie --tray")
+awful.spawn.with_shell("dunst")
+awful.spawn.with_shell("fcitx")
+
+-- Application key bindings
+globalkeys = gears.table.join(globalkeys,
+    awful.key({ modkey }, "Return", function () awful.spawn("alacritty") end,
+              {description = "open a terminal", group = "launcher"}),
+    awful.key({ modkey }, "e", function () awful.spawn("kate") end,
+              {description = "open kate", group = "launcher"}),
+    awful.key({ modkey }, "f", function () awful.spawn("krusader") end,
+              {description = "open krusader", group = "launcher"}),
+    awful.key({ modkey }, "w", function () awful.spawn("firefox") end,
+              {description = "open firefox", group = "launcher"})
 )
 
-root.keys(globalkeys)
+-- Battery widget
+battery_widget = wibox.widget.textbox()
+battery_widget:set_text("Battery: N/A")
 
--- クライアント設定
-awful.rules.rules = {
-    { rule = { },
-      properties = { focus = awful.client.focus.filter, raise = true,
-                     screen = awful.screen.preferred,
-                     placement = awful.placement.no_overlap+awful.placement.no_offscreen }
-    },
+-- Volume widget
+volume_widget = wibox.widget.textbox()
+volume_widget:set_text("Vol: N/A")
+
+-- Update timer for system info
+gears.timer {
+    timeout = 30,
+    call_now = true,
+    autostart = true,
+    callback = function()
+        awful.spawn.easy_async("acpi -b", function(stdout)
+            if stdout ~= "" then
+                local battery_info = stdout:match("(%d+%%)")
+                if battery_info then
+                    battery_widget:set_text("🔋 " .. battery_info)
+                end
+            end
+        end)
+        
+        awful.spawn.easy_async("amixer get Master", function(stdout)
+            local volume = stdout:match("(%d+)%%")
+            if volume then
+                volume_widget:set_text("🔊 " .. volume .. "%")
+            end
+        end)
+    end
 }
 
--- 自動起動
-awful.spawn.with_shell("~/.config/awesome/autostart.sh")
-RC_EOF
+-- Add widgets to the wibar (you may need to modify this based on your wibar setup)
+-- s.mywibox:setup {
+--     layout = wibox.layout.align.horizontal,
+--     { -- Left widgets
+--         layout = wibox.layout.fixed.horizontal,
+--         mylauncher,
+--         s.mytaglist,
+--         s.mypromptbox,
+--     },
+--     s.mytasklist, -- Middle widget
+--     { -- Right widgets
+--         layout = wibox.layout.fixed.horizontal,
+--         battery_widget,
+--         volume_widget,
+--         mykeyboardlayout,
+--         wibox.widget.systray(),
+--         mytextclock,
+--         s.mylayoutbox,
+--     },
+-- }
 
-echo "=== Enabling LightDM... ==="
+EOF
+
+# Set up services
+log "Configuring system services..."
+sudo usermod -a -G audio $USER
 sudo systemctl enable lightdm
+sudo systemctl enable NetworkManager
+sudo systemctl enable bluetooth
 
-echo "=================================================="
-echo " ✅ Setup Complete!"
-echo "=================================================="
-echo ""
-echo "=== Setting system locale to Japanese... ==="
-sudo apt install -y locales
-sudo sed -i 's/# ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
-sudo locale-gen
-sudo update-locale LANG=ja_JP.UTF-8
+# Create post-installation instructions
+log "Creating post-installation instructions..."
+cat > ~/awesome-setup-complete.txt << 'EOF'
+Debian Awesome WM Environment Setup Complete!
 
-echo ""
-echo "Next steps:"
-echo "1. Reboot: sudo reboot"
-echo "2. At login screen, select 'awesome' session"
-echo "3. After login, do the following to enable Japanese input:"
-echo "   - Run: im-config and choose 'fcitx'!!!"
-echo "   - Run: fcitx-configtool and add 'Mozc (Japanese)'!!!"
-echo ""
-echo "   You can then switch input method with Ctrl+Space"
-echo ""
-echo "System locale has been changed to Japanese (ja_JP.UTF-8)"
-echo "If it does not take effect, reboot once"
-echo ""
-echo "Key bindings:"
-echo "- Mod4 + Enter: Terminal"
-echo "- Mod4 + e: Editor"
-echo "- Mod4 + f: File manager"
-echo "- Mod4 + w: Web browser"
-echo "- Mod4 + q: CQ-editor"
-echo "- Alt + F4: Close application"
-echo ""
-echo "Issues: https://github.com/kabochance/Debian_setup"
-echo "=================================================="
+Next steps:
+1. Reboot your system: sudo reboot
+2. At the login screen, select "awesome" as your session
+3. After login, configure fcitx:
+   - Open terminal: Mod4 + Return
+   - Run: fcitx-config-gtk3
+   - In "Input Method" tab, click "+" and add "Mozc"
+   - Use Ctrl+Space to toggle Japanese input
+
+Key bindings:
+- Mod4 + Return: Open alacritty (terminal)
+- Mod4 + e: Open kate (editor)
+- Mod4 + f: Open krusader (file manager)
+- Mod4 + w: Open firefox (web browser)
+- Ctrl + Space: Toggle Japanese input
+
+System tray should show:
+- Network Manager
+- Volume control
+- Clipboard manager
+- Bluetooth manager
+- Auto-mount notifications
+
+If you encounter any issues, check:
+- Japanese input: killall fcitx && fcitx &
+- Audio: pulseaudio -k && pulseaudio --start
+- Network: sudo systemctl restart NetworkManager
+
+Enjoy your new Debian Awesome WM environment!
+EOF
+
+log "Setup completed successfully!"
+log "Please read ~/awesome-setup-complete.txt for next steps."
+log "You need to reboot to complete the installation."
+
+read -p "Do you want to reboot now? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    log "Rebooting..."
+    sudo reboot
+else
+    log "Please reboot manually when ready."
+fi

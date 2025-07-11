@@ -281,11 +281,4 @@ log "Setup completed successfully!"
 log "Please read ~/awesome-setup-complete.txt for next steps."
 log "You need to reboot to complete the installation."
 
-read -p "Do you want to reboot now? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    log "Rebooting..."
-    sudo reboot
-else
-    log "Please reboot manually when ready."
-fi
+sudo reboot

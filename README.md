@@ -31,7 +31,7 @@ wget -O - https://raw.githubusercontent.com/kabochance/Debian_setup/main/setup.s
 ### または手動でダウンロード
 
 ```bash
-wget https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh
+wget https://raw.githubusercontent.com/kabochance/Debian_setup/main/setup.sh
 chmod +x install.sh
 ./install.sh
 ```

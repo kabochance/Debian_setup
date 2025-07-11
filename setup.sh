@@ -80,7 +80,7 @@ sudo apt install -y alacritty kate krusader kio-extras firefox-esr
 
 # Install system management tools
 log "Installing system management tools..."
-sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst clipit bluetooth bluez bluez-tools blueman udisks2 udiskie pcmanfm
+sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst diodon bluetooth bluez bluez-tools blueman udisks2 udiskie pcmanfm
 
 # Install additional useful tools
 log "Installing additional tools..."
@@ -176,7 +176,7 @@ cat >> ~/.config/awesome/rc.lua << 'EOF'
 -- Auto-start applications
 awful.spawn.with_shell("nm-applet")
 awful.spawn.with_shell("volumeicon")
-awful.spawn.with_shell("clipit")
+awful.spawn.with_shell("diodon")
 awful.spawn.with_shell("blueman-applet")
 awful.spawn.with_shell("udiskie --tray")
 awful.spawn.with_shell("dunst")
@@ -265,7 +265,7 @@ Key bindings:
 System tray should show:
 - Network Manager
 - Volume control
-- Clipboard manager
+- Clipboard manager (Diodon)
 - Bluetooth manager
 - Auto-mount notifications
 
@@ -281,6 +281,11 @@ log "Setup completed successfully!"
 log "Please read ~/awesome-setup-complete.txt for next steps."
 log "You need to reboot to complete the installation."
 
-log "Rebooting..."
-sudo reboot
-
+read -p "Do you want to reboot now? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    log "Rebooting..."
+    sudo reboot
+else
+    log "Please reboot manually when ready."
+fi

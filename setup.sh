@@ -70,32 +70,9 @@ sudo apt install -y locales
 echo "ja_JP.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
 sudo locale-gen
 
-# Install fcitx for Japanese input
-log "Installing fcitx for Japanese input..."
-# Check Debian version and install appropriate packages
-DEBIAN_VERSION=$(lsb_release -rs 2>/dev/null || echo "unknown")
-if [[ "$DEBIAN_VERSION" == "12"* ]] || [[ "$DEBIAN_VERSION" == "unknown" ]]; then
-    # For Debian 12 (bookworm) and newer, offer fcitx5 or fcitx4
-    echo "Debian 12 detected. Choose input method framework:"
-    echo "1) fcitx5 (recommended for Debian 12)"
-    echo "2) fcitx4 (legacy, limited packages)"
-    read -p "Enter your choice (1 or 2): " -n 1 -r
-    echo
-    
-    if [[ $REPLY =~ ^[1]$ ]]; then
-        log "Installing fcitx5..."
-        sudo apt install -y fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-qt5
-        FCITX_VERSION="5"
-    else
-        log "Installing fcitx4 (limited packages available)..."
-        sudo apt install -y fcitx fcitx-mozc fcitx-config-gtk fcitx-frontend-gtk2 fcitx-frontend-gtk3 fcitx-frontend-qt5
-        FCITX_VERSION="4"
-    fi
-else
-    # For older Debian versions
-    sudo apt install -y fcitx fcitx-mozc fcitx-config-gtk fcitx-frontend-gtk2 fcitx-frontend-gtk3 fcitx-frontend-qt4 fcitx-frontend-qt5
-    FCITX_VERSION="4"
-fi
+# Install fcitx5 for Japanese input
+log "Installing fcitx5 for Japanese input..."
+sudo apt install -y fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-qt5
 
 # Install applications
 log "Installing applications..."
@@ -183,32 +160,18 @@ cat > ~/.config/dunst/dunstrc << 'EOF'
     timeout = 0
 EOF
 
-# Set up environment variables for fcitx
-log "Setting up fcitx environment variables..."
-if [[ "$FCITX_VERSION" == "5" ]]; then
-    {
-        echo 'export GTK_IM_MODULE=fcitx5'
-        echo 'export QT_IM_MODULE=fcitx5'
-        echo 'export XMODIFIERS=@im=fcitx5'
-        echo 'export DefaultIMModule=fcitx5'
-    } >> ~/.bashrc
-else
-    {
-        echo 'export GTK_IM_MODULE=fcitx'
-        echo 'export QT_IM_MODULE=fcitx'
-        echo 'export XMODIFIERS=@im=fcitx'
-        echo 'export DefaultIMModule=fcitx'
-    } >> ~/.bashrc
-fi
+# Set up environment variables for fcitx5
+log "Setting up fcitx5 environment variables..."
+{
+    echo 'export GTK_IM_MODULE=fcitx5'
+    echo 'export QT_IM_MODULE=fcitx5'
+    echo 'export XMODIFIERS=@im=fcitx5'
+    echo 'export DefaultIMModule=fcitx5'
+} >> ~/.bashrc
 
 # Create awesome WM configuration with auto-start applications
 log "Configuring awesome WM with auto-start applications..."
-FCITX_COMMAND="fcitx"
-if [[ "$FCITX_VERSION" == "5" ]]; then
-    FCITX_COMMAND="fcitx5"
-fi
-
-cat >> ~/.config/awesome/rc.lua << EOF
+cat >> ~/.config/awesome/rc.lua << 'EOF'
 
 -- Auto-start applications
 awful.spawn.with_shell("nm-applet")
@@ -217,7 +180,7 @@ awful.spawn.with_shell("clipit")
 awful.spawn.with_shell("blueman-applet")
 awful.spawn.with_shell("udiskie --tray")
 awful.spawn.with_shell("dunst")
-awful.spawn.with_shell("$FCITX_COMMAND")
+awful.spawn.with_shell("fcitx5")
 EOF
 
 -- Application key bindings
@@ -296,20 +259,15 @@ sudo systemctl enable bluetooth
 
 # Create post-installation instructions
 log "Creating post-installation instructions..."
-FCITX_CONFIG_COMMAND="fcitx-config-gtk3"
-if [[ "$FCITX_VERSION" == "5" ]]; then
-    FCITX_CONFIG_COMMAND="fcitx5-config-qt"
-fi
-
-cat > ~/awesome-setup-complete.txt << EOF
+cat > ~/awesome-setup-complete.txt << 'EOF'
 Debian Awesome WM Environment Setup Complete!
 
 Next steps:
 1. Reboot your system: sudo reboot
 2. At the login screen, select "awesome" as your session
-3. After login, configure fcitx:
+3. After login, configure fcitx5:
    - Open terminal: Mod4 + Return
-   - Run: $FCITX_CONFIG_COMMAND
+   - Run: fcitx5-config-qt
    - In "Input Method" tab, click "+" and add "Mozc"
    - Use Ctrl+Space to toggle Japanese input
 
@@ -328,7 +286,7 @@ System tray should show:
 - Auto-mount notifications
 
 If you encounter any issues, check:
-- Japanese input: killall fcitx${FCITX_VERSION} && fcitx${FCITX_VERSION} &
+- Japanese input: killall fcitx5 && fcitx5 &
 - Audio: pulseaudio -k && pulseaudio --start
 - Network: sudo systemctl restart NetworkManager
 

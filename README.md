@@ -1,26 +1,119 @@
-# Debian_setup
+# Debian Awesome WM Environment Setup
 
-#内容
+Debian最小構成からawesome WM環境を自動構築するスクリプトです。
 
-Debian最小構成でインストールして、awesomeを利用した環境を整える手順を説明して。
-日本語入力としてfcitxを設定して。
-もちろん日本語フォントは必須です。
-ターミナルにはalacritty
-editorはkate
-ファイラにはranger
-ウェブブラウザはfirefox
-rangerでプレビューが見えるようにしてください。
-ネットワークマネージャ、音量調整、通知システム、クリップボード管理、ブルートゥースが必要です。
-Mod4 + Shift + q: アプリケーション終了
-をAlt+F4にしたい
-CQ-editorを使いたいです。インストールの手順を示してください。
-また、これは仮想環境を利用するアプリです。
-仮想環境を設定してアプリを立ち上げるという処理をMod4 +  qに割り当ててほしいです。
+## 機能
 
-# 実行方法
+- **Window Manager**: awesome WM
+- **日本語入力**: fcitx + Mozc
+- **日本語フォント**: Noto CJK フォント
+- **ターミナル**: alacritty
+- **エディタ**: kate
+- **ファイルマネージャ**: Krusader
+- **ウェブブラウザ**: Firefox ESR
+- **システム管理**:
+  - NetworkManager (ネットワーク管理)
+  - PulseAudio + pavucontrol (音量調整)
+  - dunst (通知システム)
+  - clipit (クリップボード管理)
+  - blueman (Bluetooth管理)
+  - udiskie (自動マウント)
+  - 電源管理ツール
 
-言語は英語にしておいたほうが良い。
-終わると切り替わる。
-wget https://raw.githubusercontent.com/kabochance/Debian_setup/refs/heads/main/setup.sh
-chmod +x setup.sh
-./setup.sh
+## 使用方法
+
+### ワンライナーでインストール
+
+```bash
+wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh | bash
+```
+
+### または手動でダウンロード
+
+```bash
+wget https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh
+chmod +x install.sh
+./install.sh
+```
+
+## 前提条件
+
+- Debian系OS (Debian 11/12推奨)
+- sudoが使用可能なユーザー
+- インターネット接続
+
+## インストール後の設定
+
+1. **再起動**
+   ```bash
+   sudo reboot
+   ```
+
+2. **ログイン画面でawesome WMを選択**
+
+3. **fcitxの設定**
+   - ターミナルを開く: `Mod4 + Return`
+   - 設定ツールを起動: `fcitx-config-gtk3`
+   - 「Input Method」タブで「+」をクリック
+   - 「Only Show Current Language」のチェックを外す
+   - 「Mozc」を検索して追加
+
+## キーバインド
+
+- `Mod4 + Return`: alacritty起動
+- `Mod4 + e`: kate起動
+- `Mod4 + f`: krusader起動
+- `Mod4 + w`: firefox起動
+- `Ctrl + Space`: 日本語入力切り替え
+
+## トラブルシューティング
+
+### 日本語入力が動作しない
+
+```bash
+# fcitxの再起動
+killall fcitx && fcitx &
+
+# 環境変数の確認
+echo $GTK_IM_MODULE
+```
+
+### 音が出ない
+
+```bash
+# PulseAudioの再起動
+pulseaudio -k && pulseaudio --start
+
+# 音量確認
+alsamixer
+```
+
+### ネットワークが接続できない
+
+```bash
+# NetworkManagerの再起動
+sudo systemctl restart NetworkManager
+
+# 状態確認
+systemctl status NetworkManager
+```
+
+## カスタマイズ
+
+### awesome WM設定
+
+設定ファイル: `~/.config/awesome/rc.lua`
+
+### alacritty設定
+
+設定ファイル: `~/.config/alacritty/alacritty.yml`
+
+### dunst通知設定
+
+設定ファイル: `~/.config/dunst/dunstrc`
+
+
+
+## 更新履歴
+
+- v1.0.0: 初回リリース

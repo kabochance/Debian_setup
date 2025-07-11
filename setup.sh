@@ -181,7 +181,6 @@ awful.spawn.with_shell("blueman-applet")
 awful.spawn.with_shell("udiskie --tray")
 awful.spawn.with_shell("dunst")
 awful.spawn.with_shell("fcitx5")
-EOF
 
 -- Application key bindings
 globalkeys = gears.table.join(globalkeys,
@@ -247,7 +246,6 @@ gears.timer {
 --         s.mylayoutbox,
 --     },
 -- }
-
 EOF
 
 # Set up services

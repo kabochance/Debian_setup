@@ -80,7 +80,7 @@ sudo apt install -y alacritty kate krusader kio-extras firefox-esr
 
 # Install system management tools
 log "Installing system management tools..."
-sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst clipit bluetooth bluez bluez-tools blueman acpi acpi-support laptop-mode-tools udisks2 udiskie pcmanfm
+sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst clipit bluetooth bluez bluez-tools blueman udisks2 udiskie pcmanfm
 
 # Install additional useful tools
 log "Installing additional tools..."
@@ -194,10 +194,6 @@ globalkeys = gears.table.join(globalkeys,
               {description = "open firefox", group = "launcher"})
 )
 
--- Battery widget
-battery_widget = wibox.widget.textbox()
-battery_widget:set_text("Battery: N/A")
-
 -- Volume widget
 volume_widget = wibox.widget.textbox()
 volume_widget:set_text("Vol: N/A")
@@ -208,15 +204,6 @@ gears.timer {
     call_now = true,
     autostart = true,
     callback = function()
-        awful.spawn.easy_async("acpi -b", function(stdout)
-            if stdout ~= "" then
-                local battery_info = stdout:match("(%d+%%)")
-                if battery_info then
-                    battery_widget:set_text("🔋 " .. battery_info)
-                end
-            end
-        end)
-        
         awful.spawn.easy_async("amixer get Master", function(stdout)
             local volume = stdout:match("(%d+)%%")
             if volume then
@@ -238,7 +225,6 @@ gears.timer {
 --     s.mytasklist, -- Middle widget
 --     { -- Right widgets
 --         layout = wibox.layout.fixed.horizontal,
---         battery_widget,
 --         volume_widget,
 --         mykeyboardlayout,
 --         wibox.widget.systray(),

@@ -9,7 +9,7 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
 - **日本語フォント**: Noto CJK フォント
 - **ターミナル**: alacritty
 - **エディタ**: kate
-- **ファイルマネージャ**: Krusader
+- **ファイルマネージャ**: 
 - **ウェブブラウザ**: Firefox ESR
 - **システム管理**:
   - NetworkManager (ネットワーク管理)
@@ -38,7 +38,7 @@ chmod +x install.sh
 
 ## 前提条件
 
-- Debian系OS (Debian 11/12推奨)
+- Debian系OS
 - sudoが使用可能なユーザー
 - インターネット接続
 
@@ -62,7 +62,7 @@ chmod +x install.sh
 
 - `Mod4 + Return`: alacritty起動
 - `Mod4 + e`: kate起動
-- `Mod4 + f`: krusader起動
+- `Mod4 + f`: ファイラ起動
 - `Mod4 + w`: firefox起動
 - `Ctrl + Space`: 日本語入力切り替え
 
@@ -113,11 +113,20 @@ systemctl status NetworkManager
 設定ファイル: `~/.config/dunst/dunstrc`
 
 ## やること
+
 CAD-Query,CQ-editorのインストール
+sudo apt update
+sudo apt upgrade -y
+sudo apt install python3-pip
+sudo apt install python3-dev python3-venv libffi-dev libssl-dev build-essential
+python3 -m venv cadquery-env
+source cadquery-env/bin/activate
+pip install cadquery cq-editor PySide2 spyder-kernels
+python -m cq_editor
+
 ショートカットで仮想環境作成とCQ-editor起動の割当
+
 スライサー
-システムを日本語に＆ディレクトリの名前変更
-Alt+F4で閉じる
 ROCm
 Ollama
 StableD

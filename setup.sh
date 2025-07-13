@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Debian Awesome WM Environment Setup Script
-# Usage: wget -O - https://raw.githubusercontent.com/YOUR_USERNAME/debian-awesome-setup/main/install.sh | bash
+# Debian Awesome WM Setup Script
+# Usage: wget -O setup-awesome-debian.sh https://raw.githubusercontent.com/username/repo/main/setup-awesome-debian.sh && chmod +x setup-awesome-debian.sh && ./setup-awesome-debian.sh
 
 set -e
 
@@ -14,278 +14,695 @@ NC='\033[0m' # No Color
 
 # Logging function
 log() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $1"
 }
 
 warn() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 error() {
     echo -e "${RED}[ERROR]${NC} $1"
-    exit 1
 }
 
 # Check if running as root
-if [ "$EUID" -eq 0 ]; then
-    error "Please do not run this script as root. Run as a regular user with sudo privileges."
+if [[ $EUID -eq 0 ]]; then
+   error "This script should not be run as root"
+   exit 1
 fi
 
-# Check if sudo is available
-if ! command -v sudo &> /dev/null; then
-    error "sudo is required but not installed. Please install sudo first."
-fi
+# Set locale to English temporarily
+export LANG=C
+export LC_ALL=C
 
-# Check if running on Debian
-if ! grep -q "Debian" /etc/os-release; then
-    warn "This script is designed for Debian. Other distributions may not work correctly."
-    read -p "Do you want to continue anyway? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-fi
-
-log "Starting Debian Awesome WM environment setup..."
+log "Starting Debian Awesome WM setup..."
 
 # Update system
 log "Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
-# Install basic packages
-log "Installing basic packages..."
-sudo apt install -y curl wget git build-essential
+# Install awesome and display manager
+log "Installing Awesome WM and LightDM..."
+sudo apt install -y awesome lightdm
 
-# Install X Window System and awesome WM
-log "Installing X Window System and awesome WM..."
-sudo apt install -y xorg lightdm awesome
+# Install applications
+log "Installing required applications..."
+sudo apt install -y \
+    alacritty \
+    kate \
+    pcmanfm \
+    firefox-esr \
+    network-manager \
+    network-manager-gnome \
+    pulseaudio \
+    pavucontrol \
+    dunst \
+    libnotify-bin \
+    xclip \
+    xsel \
+    clipit \
+    bluetooth \
+    bluez \
+    blueman \
+    xfce4-power-manager \
+    udisks2 \
+    udiskie \
+    rofi \
+    feh \
+    picom
 
-# Install Japanese fonts
-log "Installing Japanese fonts..."
-sudo apt install -y fonts-noto-cjk fonts-noto-cjk-extra fonts-takao fonts-liberation fonts-noto-color-emoji
+# Install Japanese fonts and input method
+log "Installing Japanese fonts and fcitx5..."
+sudo apt install -y \
+    fonts-noto-cjk \
+    fonts-noto-cjk-extra \
+    fonts-takao \
+    fcitx5 \
+    fcitx5-mozc \
+    fcitx5-config-qt \
+    locales
 
 # Configure Japanese locale
 log "Configuring Japanese locale..."
-sudo apt install -y locales
-echo "ja_JP.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen
+sudo sed -i 's/# ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
 sudo locale-gen
 
-# Install fcitx5 for Japanese input
-log "Installing fcitx5 for Japanese input..."
-sudo apt install -y fcitx5 fcitx5-mozc fcitx5-config-qt fcitx5-frontend-gtk2 fcitx5-frontend-gtk3 fcitx5-frontend-qt5
-
-# Install applications
-log "Installing applications..."
-sudo apt install -y alacritty kate krusader kio-extras firefox-esr
-
-# Install system management tools
-log "Installing system management tools..."
-sudo apt install -y network-manager network-manager-gnome pulseaudio pavucontrol volumeicon-alsa dunst diodon bluetooth bluez bluez-tools blueman udisks2 udiskie pcmanfm
-
-# Install additional useful tools
-log "Installing additional tools..."
-sudo apt install -y htop neofetch scrot feh
-
-# Create awesome configuration directory
-log "Setting up awesome WM configuration..."
+# Create awesome config directory
+log "Creating awesome configuration..."
 mkdir -p ~/.config/awesome
+
+# Copy default config
 cp /etc/xdg/awesome/rc.lua ~/.config/awesome/
 
-# Create alacritty configuration
-log "Setting up alacritty configuration..."
-mkdir -p ~/.config/alacritty
-cat > ~/.config/alacritty/alacritty.yml << 'EOF'
-window:
-  opacity: 0.9
-  
-font:
-  normal:
-    family: Noto Sans Mono CJK JP
-  size: 12
+# Create awesome configuration
+cat > ~/.config/awesome/rc.lua << 'EOF'
+-- awesome configuration file
+pcall(require, "luarocks.loader")
+local gears = require("gears")
+local awful = require("awful")
+require("awful.autofocus")
+local wibox = require("wibox")
+local beautiful = require("beautiful")
+local naughty = require("naughty")
+local menubar = require("menubar")
+local hotkeys_popup = require("awful.hotkeys_popup")
+require("awful.hotkeys_popup.keys")
 
-colors:
-  primary:
-    background: '0x1e1e1e'
-    foreground: '0xffffff'
-EOF
+-- Error handling
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
 
-# Create dunst configuration
-log "Setting up dunst configuration..."
-mkdir -p ~/.config/dunst
-cat > ~/.config/dunst/dunstrc << 'EOF'
-[global]
-    font = Noto Sans CJK JP 10
-    allow_markup = yes
-    format = "%s\n%b"
-    sort = yes
-    indicate_hidden = yes
-    alignment = left
-    bounce_freq = 0
-    show_age_threshold = 60
-    word_wrap = yes
-    ignore_newline = no
-    geometry = "300x5-30+20"
-    shrink = no
-    transparency = 0
-    idle_threshold = 120
-    monitor = 0
-    follow = mouse
-    sticky_history = yes
-    history_length = 20
-    show_indicators = yes
-    line_height = 0
-    separator_height = 2
-    padding = 8
-    horizontal_padding = 8
-    separator_color = frame
-    startup_notification = false
-    dmenu = /usr/bin/dmenu -p dunst:
-    browser = /usr/bin/firefox
-    icon_position = left
-    max_icon_size = 32
+do
+    local in_error = false
+    awesome.connect_signal("debug::error", function (err)
+        if in_error then return end
+        in_error = true
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = tostring(err) })
+        in_error = false
+    end)
+end
 
-[urgency_low]
-    background = "#222222"
-    foreground = "#888888"
-    timeout = 10
+-- Theme
+beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
-[urgency_normal]
-    background = "#285577"
-    foreground = "#ffffff"
-    timeout = 10
+-- Variables
+terminal = "alacritty"
+editor = os.getenv("EDITOR") or "kate"
+editor_cmd = terminal .. " -e " .. editor
+modkey = "Mod4"
 
-[urgency_critical]
-    background = "#900000"
-    foreground = "#ffffff"
-    timeout = 0
-EOF
-
-# Set up environment variables for fcitx5
-log "Setting up fcitx5 environment variables..."
-{
-    echo 'export GTK_IM_MODULE=fcitx5'
-    echo 'export QT_IM_MODULE=fcitx5'
-    echo 'export XMODIFIERS=@im=fcitx5'
-    echo 'export DefaultIMModule=fcitx5'
-} >> ~/.bashrc
-
-# Create awesome WM configuration with auto-start applications
-log "Configuring awesome WM with auto-start applications..."
-cat >> ~/.config/awesome/rc.lua << 'EOF'
-
--- Auto-start applications
-awful.spawn.with_shell("nm-applet")
-awful.spawn.with_shell("volumeicon")
-awful.spawn.with_shell("diodon")
-awful.spawn.with_shell("blueman-applet")
-awful.spawn.with_shell("udiskie --tray")
-awful.spawn.with_shell("dunst")
-awful.spawn.with_shell("fcitx5")
-
--- Application key bindings
-globalkeys = gears.table.join(globalkeys,
-    awful.key({ modkey }, "Return", function () awful.spawn("alacritty") end,
-              {description = "open a terminal", group = "launcher"}),
-    awful.key({ modkey }, "e", function () awful.spawn("kate") end,
-              {description = "open kate", group = "launcher"}),
-    awful.key({ modkey }, "f", function () awful.spawn("krusader") end,
-              {description = "open krusader", group = "launcher"}),
-    awful.key({ modkey }, "w", function () awful.spawn("firefox") end,
-              {description = "open firefox", group = "launcher"})
-)
-
--- Volume widget
-volume_widget = wibox.widget.textbox()
-volume_widget:set_text("Vol: N/A")
-
--- Update timer for system info
-gears.timer {
-    timeout = 30,
-    call_now = true,
-    autostart = true,
-    callback = function()
-        awful.spawn.easy_async("amixer get Master", function(stdout)
-            local volume = stdout:match("(%d+)%%")
-            if volume then
-                volume_widget:set_text("🔊 " .. volume .. "%")
-            end
-        end)
-    end
+-- Layouts
+awful.layout.layouts = {
+    awful.layout.suit.floating,
+    awful.layout.suit.tile,
+    awful.layout.suit.tile.left,
+    awful.layout.suit.tile.bottom,
+    awful.layout.suit.tile.top,
+    awful.layout.suit.fair,
+    awful.layout.suit.fair.horizontal,
+    awful.layout.suit.spiral,
+    awful.layout.suit.spiral.dwindle,
+    awful.layout.suit.max,
+    awful.layout.suit.max.fullscreen,
+    awful.layout.suit.magnifier,
+    awful.layout.suit.corner.nw,
 }
 
--- Add widgets to the wibar (you may need to modify this based on your wibar setup)
--- s.mywibox:setup {
---     layout = wibox.layout.align.horizontal,
---     { -- Left widgets
---         layout = wibox.layout.fixed.horizontal,
---         mylauncher,
---         s.mytaglist,
---         s.mypromptbox,
---     },
---     s.mytasklist, -- Middle widget
---     { -- Right widgets
---         layout = wibox.layout.fixed.horizontal,
---         volume_widget,
---         mykeyboardlayout,
---         wibox.widget.systray(),
---         mytextclock,
---         s.mylayoutbox,
---     },
--- }
+-- Menu
+myawesomemenu = {
+   { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
+   { "manual", terminal .. " -e man awesome" },
+   { "edit config", editor_cmd .. " " .. awesome.conffile },
+   { "restart", awesome.restart },
+   { "quit", function() awesome.quit() end },
+}
+
+mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
+                                    { "open terminal", terminal }
+                                  }
+                        })
+
+mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
+                                     menu = mymainmenu })
+
+menubar.utils.terminal = terminal
+
+-- Wibar
+mytextclock = wibox.widget.textclock()
+
+-- Screen configuration
+local function set_wallpaper(s)
+    if beautiful.wallpaper then
+        local wallpaper = beautiful.wallpaper
+        if type(wallpaper) == "function" then
+            wallpaper = wallpaper(s)
+        end
+        gears.wallpaper.maximized(wallpaper, s, true)
+    end
+end
+
+screen.connect_signal("property::geometry", set_wallpaper)
+
+awful.screen.connect_for_each_screen(function(s)
+    set_wallpaper(s)
+    
+    awful.tag({ "1", "2", "3", "4", "5", "6", "7", "8", "9" }, s, awful.layout.layouts[1])
+    
+    s.mypromptbox = awful.widget.prompt()
+    s.mylayoutbox = awful.widget.layoutbox(s)
+    s.mylayoutbox:buttons(gears.table.join(
+                           awful.button({ }, 1, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 3, function () awful.layout.inc(-1) end),
+                           awful.button({ }, 4, function () awful.layout.inc( 1) end),
+                           awful.button({ }, 5, function () awful.layout.inc(-1) end)))
+    
+    s.mytaglist = awful.widget.taglist {
+        screen  = s,
+        filter  = awful.widget.taglist.filter.all,
+        buttons = gears.table.join(
+                    awful.button({ }, 1, function(t) t:view_only() end),
+                    awful.button({ modkey }, 1, function(t)
+                                              if client.focus then
+                                                  client.focus:move_to_tag(t)
+                                              end
+                                          end),
+                    awful.button({ }, 3, awful.tag.viewtoggle),
+                    awful.button({ modkey }, 3, function(t)
+                                              if client.focus then
+                                                  client.focus:toggle_tag(t)
+                                              end
+                                          end),
+                    awful.button({ }, 4, function(t) awful.tag.viewnext(t.screen) end),
+                    awful.button({ }, 5, function(t) awful.tag.viewprev(t.screen) end)
+                )
+    }
+    
+    s.mytasklist = awful.widget.tasklist {
+        screen  = s,
+        filter  = awful.widget.tasklist.filter.currenttags,
+        buttons = gears.table.join(
+                     awful.button({ }, 1, function (c)
+                                              if c == client.focus then
+                                                  c.minimized = true
+                                              else
+                                                  c:emit_signal(
+                                                      "request::activate",
+                                                      "tasklist",
+                                                      {raise = true}
+                                                  )
+                                              end
+                                          end),
+                     awful.button({ }, 3, function()
+                                              awful.menu.client_list({ theme = { width = 250 } })
+                                          end),
+                     awful.button({ }, 4, function ()
+                                              awful.client.focus.byidx(1)
+                                          end),
+                     awful.button({ }, 5, function ()
+                                              awful.client.focus.byidx(-1)
+                                          end))
+    }
+    
+    s.mywibox = awful.wibar({ position = "top", screen = s })
+    
+    s.mywibox:setup {
+        layout = wibox.layout.align.horizontal,
+        {
+            layout = wibox.layout.fixed.horizontal,
+            mylauncher,
+            s.mytaglist,
+            s.mypromptbox,
+        },
+        s.mytasklist,
+        {
+            layout = wibox.layout.fixed.horizontal,
+            wibox.widget.systray(),
+            mytextclock,
+            s.mylayoutbox,
+        },
+    }
+end)
+
+-- Key bindings
+globalkeys = gears.table.join(
+    awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
+              {description="show help", group="awesome"}),
+    awful.key({ modkey,           }, "Left",   awful.tag.viewprev,
+              {description = "view previous", group = "tag"}),
+    awful.key({ modkey,           }, "Right",  awful.tag.viewnext,
+              {description = "view next", group = "tag"}),
+    awful.key({ modkey,           }, "Escape", awful.tag.history.restore,
+              {description = "go back", group = "tag"}),
+
+    awful.key({ modkey,           }, "j",
+        function ()
+            awful.client.focus.byidx( 1)
+        end,
+        {description = "focus next by index", group = "client"}
+    ),
+    awful.key({ modkey,           }, "k",
+        function ()
+            awful.client.focus.byidx(-1)
+        end,
+        {description = "focus previous by index", group = "client"}
+    ),
+    awful.key({ modkey,           }, "w", function () mymainmenu:show() end,
+              {description = "show main menu", group = "awesome"}),
+
+    -- Layout manipulation
+    awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end,
+              {description = "swap with next client by index", group = "client"}),
+    awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.byidx( -1)    end,
+              {description = "swap with previous client by index", group = "client"}),
+    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
+              {description = "focus the next screen", group = "screen"}),
+    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
+              {description = "focus the previous screen", group = "screen"}),
+    awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
+              {description = "jump to urgent client", group = "client"}),
+    awful.key({ modkey,           }, "Tab",
+        function ()
+            awful.client.focus.history.previous()
+            if client.focus then
+                client.focus:raise()
+            end
+        end,
+        {description = "go back", group = "client"}),
+
+    -- Standard program
+    awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
+              {description = "open a terminal", group = "launcher"}),
+    awful.key({ modkey, "Control" }, "r", awesome.restart,
+              {description = "reload awesome", group = "awesome"}),
+    awful.key({ modkey, "Shift"   }, "q", awesome.quit,
+              {description = "quit awesome", group = "awesome"}),
+
+    awful.key({ modkey,           }, "l",     function () awful.tag.incmwfact( 0.05)          end,
+              {description = "increase master width factor", group = "layout"}),
+    awful.key({ modkey,           }, "h",     function () awful.tag.incmwfact(-0.05)          end,
+              {description = "decrease master width factor", group = "layout"}),
+    awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
+              {description = "increase the number of master clients", group = "layout"}),
+    awful.key({ modkey, "Shift"   }, "l",     function () awful.tag.incnmaster(-1, nil, true) end,
+              {description = "decrease the number of master clients", group = "layout"}),
+    awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
+              {description = "increase the number of columns", group = "layout"}),
+    awful.key({ modkey, "Control" }, "l",     function () awful.tag.incncol(-1, nil, true)    end,
+              {description = "decrease the number of columns", group = "layout"}),
+    awful.key({ modkey,           }, "space", function () awful.layout.inc( 1)                end,
+              {description = "select next", group = "layout"}),
+    awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
+              {description = "select previous", group = "layout"}),
+
+    awful.key({ modkey, "Control" }, "n",
+              function ()
+                  local c = awful.client.restore()
+                  if c then
+                    c:emit_signal(
+                        "request::activate", "key.unminimize", {raise = true}
+                    )
+                  end
+              end,
+              {description = "restore minimized", group = "client"}),
+
+    -- Prompt
+    awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
+              {description = "run prompt", group = "launcher"}),
+
+    awful.key({ modkey }, "x",
+              function ()
+                  awful.prompt.run {
+                    prompt       = "Run Lua code: ",
+                    textbox      = awful.screen.focused().mypromptbox.widget,
+                    exe_callback = awful.util.eval,
+                    history_path = awful.util.get_cache_dir() .. "/history_eval"
+                  }
+              end,
+              {description = "lua execute prompt", group = "awesome"}),
+    
+    -- Rofi launcher
+    awful.key({ modkey }, "r", function() awful.spawn("rofi -show drun") end,
+              {description = "run rofi", group = "launcher"}),
+    
+    -- Alt+F4 to close window
+    awful.key({ "Mod1" }, "F4", function()
+        if client.focus then
+            client.focus:kill()
+        end
+    end, {description = "close window", group = "client"}),
+    
+    -- Text editor
+    awful.key({ modkey }, "t", function() awful.spawn("kate") end,
+              {description = "open text editor", group = "launcher"}),
+    
+    -- File manager
+    awful.key({ modkey }, "f", function() awful.spawn("pcmanfm") end,
+              {description = "open file manager", group = "launcher"}),
+    
+    -- Web browser
+    awful.key({ modkey }, "w", function() awful.spawn("firefox") end,
+              {description = "open web browser", group = "launcher"})
+)
+
+clientkeys = gears.table.join(
+    awful.key({ modkey,           }, "f",
+        function (c)
+            c.fullscreen = not c.fullscreen
+            c:raise()
+        end,
+        {description = "toggle fullscreen", group = "client"}),
+    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
+              {description = "close", group = "client"}),
+    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
+              {description = "toggle floating", group = "client"}),
+    awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
+              {description = "move to master", group = "client"}),
+    awful.key({ modkey,           }, "o",      function (c) c:move_to_screen()               end,
+              {description = "move to screen", group = "client"}),
+    awful.key({ modkey,           }, "t",      function (c) c.ontop = not c.ontop            end,
+              {description = "toggle keep on top", group = "client"}),
+    awful.key({ modkey,           }, "n",
+        function (c)
+            c.minimized = true
+        end ,
+        {description = "minimize", group = "client"}),
+    awful.key({ modkey,           }, "m",
+        function (c)
+            c.maximized = not c.maximized
+            c:raise()
+        end ,
+        {description = "(un)maximize", group = "client"}),
+    awful.key({ modkey, "Control" }, "m",
+        function (c)
+            c.maximized_vertical = not c.maximized_vertical
+            c:raise()
+        end ,
+        {description = "(un)maximize vertically", group = "client"}),
+    awful.key({ modkey, "Shift"   }, "m",
+        function (c)
+            c.maximized_horizontal = not c.maximized_horizontal
+            c:raise()
+        end ,
+        {description = "(un)maximize horizontally", group = "client"})
+)
+
+-- Bind all key numbers to tags.
+for i = 1, 9 do
+    globalkeys = gears.table.join(globalkeys,
+        -- View tag only.
+        awful.key({ modkey }, "#" .. i + 9,
+                  function ()
+                        local screen = awful.screen.focused()
+                        local tag = screen.tags[i]
+                        if tag then
+                           tag:view_only()
+                        end
+                  end,
+                  {description = "view tag #"..i, group = "tag"}),
+        -- Toggle tag display.
+        awful.key({ modkey, "Control" }, "#" .. i + 9,
+                  function ()
+                      local screen = awful.screen.focused()
+                      local tag = screen.tags[i]
+                      if tag then
+                         awful.tag.viewtoggle(tag)
+                      end
+                  end,
+                  {description = "toggle tag #" .. i, group = "tag"}),
+        -- Move client to tag.
+        awful.key({ modkey, "Shift" }, "#" .. i + 9,
+                  function ()
+                      if client.focus then
+                          local tag = client.focus.screen.tags[i]
+                          if tag then
+                              client.focus:move_to_tag(tag)
+                          end
+                     end
+                  end,
+                  {description = "move focused client to tag #"..i, group = "tag"}),
+        -- Toggle tag on focused client.
+        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
+                  function ()
+                      if client.focus then
+                          local tag = client.focus.screen.tags[i]
+                          if tag then
+                              client.focus:toggle_tag(tag)
+                          end
+                      end
+                  end,
+                  {description = "toggle focused client on tag #" .. i, group = "tag"})
+    )
+end
+
+clientbuttons = gears.table.join(
+    awful.button({ }, 1, function (c)
+        c:emit_signal("request::activate", "mouse_click", {raise = true})
+    end),
+    awful.button({ modkey }, 1, function (c)
+        c:emit_signal("request::activate", "mouse_click", {raise = true})
+        awful.mouse.client.move(c)
+    end),
+    awful.button({ modkey }, 3, function (c)
+        c:emit_signal("request::activate", "mouse_click", {raise = true})
+        awful.mouse.client.resize(c)
+    end)
+)
+
+-- Set keys
+root.keys(globalkeys)
+
+-- Rules
+awful.rules.rules = {
+    {
+        rule = { },
+        properties = { border_width = beautiful.border_width,
+                       border_color = beautiful.border_normal,
+                       focus = awful.client.focus.filter,
+                       raise = true,
+                       keys = clientkeys,
+                       buttons = clientbuttons,
+                       screen = awful.screen.preferred,
+                       placement = awful.placement.no_overlap+awful.placement.no_offscreen
+        }
+    },
+
+    {
+        rule_any = {
+            instance = {
+                "DTA",
+                "copyq",
+                "pinentry",
+            },
+            class = {
+                "Arandr",
+                "Blueman-manager",
+                "Gpick",
+                "Kruler",
+                "MessageWin",
+                "Sxiv",
+                "Tor Browser",
+                "Wpa_gui",
+                "veromix",
+                "xtightvncviewer"
+            },
+            name = {
+                "Event Tester",
+            },
+            role = {
+                "AlarmWindow",
+                "ConfigManager",
+                "pop-up",
+            }
+        },
+        properties = { floating = true }
+    },
+
+    {
+        rule_any = {type = { "normal", "dialog" }},
+        properties = { titlebars_enabled = true }
+    },
+}
+
+-- Signals
+client.connect_signal("manage", function (c)
+    if awesome.startup
+      and not c.size_hints.user_position
+      and not c.size_hints.program_position then
+        awful.placement.no_offscreen(c)
+    end
+end)
+
+client.connect_signal("request::titlebars", function(c)
+    local buttons = gears.table.join(
+        awful.button({ }, 1, function()
+            c:emit_signal("request::activate", "titlebar", {raise = true})
+            awful.mouse.client.move(c)
+        end),
+        awful.button({ }, 3, function()
+            c:emit_signal("request::activate", "titlebar", {raise = true})
+            awful.mouse.client.resize(c)
+        end)
+    )
+
+    awful.titlebar(c) : setup {
+        {
+            awful.titlebar.widget.iconwidget(c),
+            buttons = buttons,
+            layout  = wibox.layout.fixed.horizontal
+        },
+        {
+            {
+                align  = "center",
+                widget = awful.titlebar.widget.titlewidget(c)
+            },
+            buttons = buttons,
+            layout  = wibox.layout.flex.horizontal
+        },
+        {
+            awful.titlebar.widget.floatingbutton (c),
+            awful.titlebar.widget.maximizedbutton(c),
+            awful.titlebar.widget.stickybutton   (c),
+            awful.titlebar.widget.ontopbutton    (c),
+            awful.titlebar.widget.closebutton    (c),
+            layout = wibox.layout.fixed.horizontal()
+        },
+        layout = wibox.layout.align.horizontal
+    }
+end)
+
+client.connect_signal("mouse::enter", function(c)
+    c:emit_signal("request::activate", "mouse_enter", {raise = false})
+end)
+
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+
+-- Autostart applications
+awful.spawn.with_shell("fcitx5 &")
+awful.spawn.with_shell("nm-applet &")
+awful.spawn.with_shell("blueman-applet &")
+awful.spawn.with_shell("xfce4-power-manager &")
+awful.spawn.with_shell("udiskie &")
+awful.spawn.with_shell("picom &")
+awful.spawn.with_shell("dunst &")
+awful.spawn.with_shell("clipit &")
 EOF
 
-# Set up services
-log "Configuring system services..."
-sudo usermod -a -G audio $USER
-sudo systemctl enable lightdm
-sudo systemctl enable NetworkManager
+# Create environment variables for Japanese input
+log "Setting up environment variables..."
+cat >> ~/.profile << 'EOF'
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export DefaultIMModule=fcitx
+EOF
+
+# Create autostart directory
+mkdir -p ~/.config/autostart
+
+# Enable services
+log "Enabling system services..."
 sudo systemctl enable bluetooth
+sudo systemctl enable NetworkManager
 
-# Create post-installation instructions
-log "Creating post-installation instructions..."
-cat > ~/awesome-setup-complete.txt << 'EOF'
-Debian Awesome WM Environment Setup Complete!
+# Configure default locale to Japanese
+log "Setting up Japanese locale as default..."
+cat > ~/.config/locale.conf << 'EOF'
+LANG=ja_JP.UTF-8
+LC_ALL=ja_JP.UTF-8
+EOF
 
-Next steps:
-1. Reboot your system: sudo reboot
-2. At the login screen, select "awesome" as your session
-3. After login, configure fcitx5:
-   - Open terminal: Mod4 + Return
-   - Run: fcitx5-config-qt
-   - In "Input Method" tab, click "+" and add "Mozc"
-   - Use Ctrl+Space to toggle Japanese input
+# Create xinitrc for startx (optional)
+cat > ~/.xinitrc << 'EOF'
+#!/bin/sh
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+export DefaultIMModule=fcitx
 
-Key bindings:
-- Mod4 + Return: Open alacritty (terminal)
-- Mod4 + e: Open kate (editor)
-- Mod4 + f: Open krusader (file manager)
-- Mod4 + w: Open firefox (web browser)
-- Ctrl + Space: Toggle Japanese input
+# Start fcitx5
+fcitx5 &
 
-System tray should show:
-- Network Manager
-- Volume control
-- Clipboard manager (Diodon)
-- Bluetooth manager
-- Auto-mount notifications
+# Start awesome
+exec awesome
+EOF
 
-If you encounter any issues, check:
-- Japanese input: killall fcitx5 && fcitx5 &
-- Audio: pulseaudio -k && pulseaudio --start
-- Network: sudo systemctl restart NetworkManager
+chmod +x ~/.xinitrc
 
-Enjoy your new Debian Awesome WM environment!
+# Configure lightdm to use awesome as default
+log "Configuring display manager..."
+sudo mkdir -p /etc/lightdm/lightdm.conf.d
+sudo tee /etc/lightdm/lightdm.conf.d/01-awesome.conf > /dev/null << 'EOF'
+[Seat:*]
+user-session=awesome
+EOF
+
+# Set Japanese locale as system default
+log "Setting system locale to Japanese..."
+sudo localectl set-locale LANG=ja_JP.UTF-8
+
+# Create a simple readme
+cat > ~/README-awesome-setup.md << 'EOF'
+# Awesome WM Setup Complete
+
+## Key Bindings
+- **Super + Return**: Open terminal (alacritty)
+- **Super + r**: Application launcher (rofi)
+- **Super + t**: Text editor (kate)
+- **Super + f**: File manager (pcmanfm)
+- **Super + w**: Web browser (firefox)
+- **Alt + F4**: Close window
+- **Ctrl + Space**: Toggle Japanese input (fcitx5)
+
+## System Tray Applications
+- Network Manager (nm-applet)
+- Bluetooth Manager (blueman-applet)
+- Power Manager (xfce4-power-manager)
+- Clipboard Manager (clipit)
+
+## Audio
+- Use `pavucontrol` to control audio settings
+
+## Configuration Files
+- Awesome config: ~/.config/awesome/rc.lua
+- Environment variables: ~/.profile
+
+## Restart Required
+Please reboot your system to complete the setup.
 EOF
 
 log "Setup completed successfully!"
-log "Please read ~/awesome-setup-complete.txt for next steps."
-log "You need to reboot to complete the installation."
+log "Please reboot your system to start using Awesome WM with Japanese support."
+warn "After reboot, select 'Awesome' from the session menu in the login screen."
+log "A README file has been created at ~/README-awesome-setup.md"
 
-read -p "Do you want to reboot now? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    log "Rebooting..."
-    sudo reboot
-else
-    log "Please reboot manually when ready."
-fi
+# Reset locale for the final message
+export LANG=ja_JP.UTF-8
+export LC_ALL=ja_JP.UTF-8
+
+echo -e "${GREEN}セットアップが完了しました！システムを再起動してください。${NC}"

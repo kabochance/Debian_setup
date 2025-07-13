@@ -55,16 +55,19 @@ sudo apt install -y \
     network-manager \
     network-manager-gnome \
     pulseaudio \
+    pulseaudio-utils \
     pavucontrol \
+    pasystray \
     dunst \
     libnotify-bin \
     xclip \
     xsel \
-    clipit \
+    diodon \
     bluetooth \
     bluez \
     blueman \
     xfce4-power-manager \
+    xfce4-power-manager-plugins \
     udisks2 \
     udiskie \
     rofi \
@@ -138,8 +141,8 @@ modkey = "Mod4"
 
 -- Layouts
 awful.layout.layouts = {
-    awful.layout.suit.floating,
     awful.layout.suit.tile,
+    awful.layout.suit.floating,
     awful.layout.suit.tile.left,
     awful.layout.suit.tile.bottom,
     awful.layout.suit.tile.top,
@@ -291,7 +294,7 @@ globalkeys = gears.table.join(
         end,
         {description = "focus previous by index", group = "client"}
     ),
-    awful.key({ modkey,           }, "w", function () mymainmenu:show() end,
+    awful.key({ modkey,           }, "q", function () mymainmenu:show() end,
               {description = "show main menu", group = "awesome"}),
 
     -- Layout manipulation
@@ -377,7 +380,7 @@ globalkeys = gears.table.join(
     end, {description = "close window", group = "client"}),
     
     -- Text editor
-    awful.key({ modkey }, "t", function() awful.spawn("kate") end,
+    awful.key({ modkey }, "e", function() awful.spawn("kate") end,
               {description = "open text editor", group = "launcher"}),
     
     -- File manager
@@ -607,10 +610,11 @@ awful.spawn.with_shell("fcitx5 &")
 awful.spawn.with_shell("nm-applet &")
 awful.spawn.with_shell("blueman-applet &")
 awful.spawn.with_shell("xfce4-power-manager &")
+awful.spawn.with_shell("pasystray &")
 awful.spawn.with_shell("udiskie &")
 awful.spawn.with_shell("picom &")
 awful.spawn.with_shell("dunst &")
-awful.spawn.with_shell("clipit &")
+awful.spawn.with_shell("diodon &")
 EOF
 
 # Create environment variables for Japanese input
@@ -673,17 +677,19 @@ cat > ~/README-awesome-setup.md << 'EOF'
 ## Key Bindings
 - **Super + Return**: Open terminal (alacritty)
 - **Super + r**: Application launcher (rofi)
-- **Super + t**: Text editor (kate)
+- **Super + e**: Text editor (kate)
 - **Super + f**: File manager (pcmanfm)
 - **Super + w**: Web browser (firefox)
+- **Super + q**: Main menu
 - **Alt + F4**: Close window
 - **Ctrl + Space**: Toggle Japanese input (fcitx5)
 
 ## System Tray Applications
 - Network Manager (nm-applet)
+- Audio Volume Control (pasystray)
 - Bluetooth Manager (blueman-applet)
 - Power Manager (xfce4-power-manager)
-- Clipboard Manager (clipit)
+- Clipboard Manager (diodon)
 
 ## Audio
 - Use `pavucontrol` to control audio settings

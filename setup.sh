@@ -51,6 +51,7 @@ sudo apt install -y \
     alacritty \
     kate \
     git \
+    flatpak \
     pcmanfm \
     firefox-esr \
     network-manager \
@@ -74,6 +75,13 @@ sudo apt install -y \
     rofi \
     feh \
     picom
+
+# Install flatpak 
+sudo apt install gnome-software-plugin-flatpak 
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Install Prusa Slicer
+flatpak install flathub com.prusa3d.PrusaSlicer
 
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."
@@ -421,6 +429,10 @@ globalkeys = gears.table.join(
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
               {description = "open CadQuery", group = "launcher"})
+
+    -- PrusaSlicer
+       awful.key({ modkey }, "p", function() awful.spawn("flatpak run com.prusa3d.PrusaSlicer") end,
+              {description = "open Slicer", group = "launcher"}),
 )
 
 clientkeys = gears.table.join(
@@ -712,6 +724,7 @@ cat > ~/README-awesome-setup.md << 'EOF'
 - **Super + f**: File manager (pcmanfm)
 - **Super + w**: Web browser (firefox)
 - **Super + c**: CadQuery (cq-editor)
+- **Super + p**: Slicer (PrusaSlicer)
 - **Super + q**: Main menu
 - **Alt + F4**: Close window
 - **Ctrl + Space**: Toggle Japanese input (fcitx5)
@@ -744,4 +757,4 @@ log "A README file has been created at ~/README-awesome-setup.md"
 export LANG=ja_JP.UTF-8
 export LC_ALL=ja_JP.UTF-8
 
-echo -e "${GREEN}セットアップが完了しました！システムを再起動してください。${NC}"
+echo -e "${GREEN} SetupComplete!Please reboot ${NC}"

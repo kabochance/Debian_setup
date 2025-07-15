@@ -50,6 +50,7 @@ log "Installing required applications..."
 sudo apt install -y \
     alacritty \
     kate \
+    git \
     pcmanfm \
     firefox-esr \
     network-manager \
@@ -106,6 +107,7 @@ cd ~
 python3 -m venv cadquery-env
 source cadquery-env/bin/activate
 pip install cadquery cq-editor PySide2 spyder-kernels
+pip install git+https://github.com/meadiode/cq_gears.git@main
 deactivate
 
 # Create CadQuery launcher script

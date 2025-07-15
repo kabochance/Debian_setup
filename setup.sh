@@ -75,12 +75,6 @@ sudo apt install -y \
     feh \
     picom
 
-# Install flatpak
-sudo apt install flatpak
-sudo apt install gnome-software-plugin-flatpak # Software centerにFlatpakを追加します（必須ではありません）
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flathub.flatpakrepo
-
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."
 sudo apt install -y \

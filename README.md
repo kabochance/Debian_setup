@@ -11,6 +11,9 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
 - **エディタ**: kate
 - **ファイルマネージャ**: 
 - **ウェブブラウザ**: Firefox ESR
+- **CADQuery+gears
+- **Flatpak
+- **git
 - **システム管理**:
   - NetworkManager (ネットワーク管理)
   - PulseAudio + pavucontrol (音量調整)
@@ -113,18 +116,6 @@ systemctl status NetworkManager
 設定ファイル: `~/.config/dunst/dunstrc`
 
 ## やること
-
-CAD-Query,CQ-editorのインストール
-sudo apt update
-sudo apt upgrade -y
-sudo apt install python3-pip
-sudo apt install python3-dev python3-venv libffi-dev libssl-dev build-essential
-python3 -m venv cadquery-env
-source cadquery-env/bin/activate
-pip install cadquery cq-editor PySide2 spyder-kernels
-python -m cq_editor
-
-ショートカットで仮想環境作成とCQ-editor起動の割当
 
 スライサー
 ROCm

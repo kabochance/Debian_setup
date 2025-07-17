@@ -71,6 +71,10 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 log "Installing GNOME Software Flatpak plugin..."
 sudo apt install -y gnome-software-plugin-flatpak
 
+# Install PrusaSlicer via Flatpak
+log "Installing PrusaSlicer via Flatpak..."
+sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
+
 # Install applications
 log "Installing required applications..."
 sudo apt install -y \
@@ -448,6 +452,11 @@ globalkeys = gears.table.join(
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
               {description = "open CadQuery", group = "launcher"})
+
+    -- PrusaSlicer
+    awful.key({ modkey }, "p", function() awful.spawn("flatpak run com.prusa3d.PrusaSlicer") end,
+            　{description = "open PrusaSlicer", group = "launcher"}),
+
 )
 
 clientkeys = gears.table.join(

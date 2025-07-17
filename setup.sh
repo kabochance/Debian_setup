@@ -31,15 +31,6 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
-
-# Ask for sudo password once
-log "Requesting sudo password..."
-sudo -v
-( while true; do sudo -n true; sleep 60; done ) 2>/dev/null &
-SUDO_PID="$!"
-trap 'kill $SUDO_PID' EXIT
-
-
 # Set locale to English temporarily
 export LANG=C
 export LC_ALL=C
@@ -53,18 +44,6 @@ sudo apt update && sudo apt upgrade -y
 # Install awesome and display manager
 log "Installing Awesome WM and LightDM..."
 sudo apt install -y awesome lightdm
-
-# Install Flatpak
-log "Installing Flatpak..."
-sudo apt install -y flatpak
-
-# Add Flathub repository
-log "Adding Flathub repository..."
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-# Install GNOME Software Plugin for Flatpak (optional, for GUI package management)
-log "Installing GNOME Software Flatpak plugin..."
-sudo apt install -y gnome-software-plugin-flatpak
 
 # Install applications
 log "Installing required applications..."
@@ -443,11 +422,6 @@ globalkeys = gears.table.join(
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
               {description = "open CadQuery", group = "launcher"})
-
-    -- PrusaSlicer
-    awful.key({ modkey }, "p", function() awful.spawn("flatpak run com.prusa3d.PrusaSlicer") end,
-            　{description = "open PrusaSlicer", group = "launcher"}),
-
 )
 
 clientkeys = gears.table.join(
@@ -761,11 +735,6 @@ cat > ~/README-awesome-setup.md << 'EOF'
 ## Restart Required
 Please reboot your system to complete the setup.
 EOF
-
-
-# Install PrusaSlicer via Flatpak
-log "Installing PrusaSlicer via Flatpak..."
-sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
 
 log "Setup completed successfully!"
 log "Please reboot your system to start using Awesome WM with Japanese support."

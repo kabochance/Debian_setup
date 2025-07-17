@@ -12,7 +12,6 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
 - **ファイルマネージャ**: 
 - **ウェブブラウザ**: Firefox ESR
 - **CADQuery+gears
-- **Flatpak
 - **git
 - **システム管理**:
   - NetworkManager (ネットワーク管理)
@@ -39,28 +38,27 @@ chmod +x install.sh
 ./install.sh
 ```
 
-## 前提条件
-
-- Debian系OS
-- sudoが使用可能なユーザー
-- インターネット接続
-
 ## インストール後の設定
 
 1. **再起動**
-   ```bash
-   sudo reboot
-   ```
 
-2. **ログイン画面でawesome WMを選択**
+2. **Flatpakの導入**
+  sudo apt install flatpak
+  sudo apt install gnome-software-plugin-flatpak # Software centerにFlatpakを追加します（必須ではありません）
+  flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-3. **fcitxの設定**
-   - ターミナルを開く: `Mod4 + Return`
-   - 設定ツールを起動: `fcitx-config-gtk3`
-   - 「Input Method」タブで「+」をクリック
-   - 「Only Show Current Language」のチェックを外す
-   - 「Mozc」を検索して追加
+3. **PrusaSlicerのインストール**
+   flatpak install flathub com.prusa3d.PrusaSlicer
+   flatpak run com.prusa3d.PrusaSlicer #起動
+   ショートカットキーとしてWin+p
+   
+4. **alacrittyの設定**
+   テーマいれるとかマウスの設定とか透過処理とか
 
+5. **ROCmのインストール**
+
+6. **ollama**
+   
 ## キーバインド
 
 - `Mod4 + Return`: alacritty起動
@@ -68,38 +66,6 @@ chmod +x install.sh
 - `Mod4 + f`: ファイラ起動
 - `Mod4 + w`: firefox起動
 - `Ctrl + Space`: 日本語入力切り替え
-
-## トラブルシューティング
-
-### 日本語入力が動作しない
-
-```bash
-# fcitxの再起動
-killall fcitx && fcitx &
-
-# 環境変数の確認
-echo $GTK_IM_MODULE
-```
-
-### 音が出ない
-
-```bash
-# PulseAudioの再起動
-pulseaudio -k && pulseaudio --start
-
-# 音量確認
-alsamixer
-```
-
-### ネットワークが接続できない
-
-```bash
-# NetworkManagerの再起動
-sudo systemctl restart NetworkManager
-
-# 状態確認
-systemctl status NetworkManager
-```
 
 ## カスタマイズ
 
@@ -114,13 +80,6 @@ systemctl status NetworkManager
 ### dunst通知設定
 
 設定ファイル: `~/.config/dunst/dunstrc`
-
-## やること
-
-スライサー
-ROCm
-Ollama
-StableD
 
 
 ## 更新履歴

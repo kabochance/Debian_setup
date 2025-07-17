@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Debian Awesome WM Setup Script
+# Debian Awesome WM Setup Script with PrusaSlicer
 # Usage: wget -O setup-awesome-debian.sh https://raw.githubusercontent.com/username/repo/main/setup-awesome-debian.sh && chmod +x setup-awesome-debian.sh && ./setup-awesome-debian.sh
 
 set -e
@@ -75,6 +75,14 @@ sudo apt install -y \
     feh \
     picom
 
+# Install Flatpak
+log "Installing Flatpak..."
+sudo apt install -y flatpak
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Install PrusaSlicer via Flatpak
+log "Installing PrusaSlicer via Flatpak..."
+sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
 
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."
@@ -121,6 +129,14 @@ python -m cq_editor
 EOF
 chmod +x ~/launch-cadquery.sh
 
+# Create PrusaSlicer launcher script
+log "Creating PrusaSlicer launcher script..."
+cat > ~/launch-prusaslicer.sh << 'EOF'
+#!/bin/bash
+flatpak run com.prusa3d.PrusaSlicer
+EOF
+chmod +x ~/launch-prusaslicer.sh
+
 # Create awesome config directory
 log "Creating awesome configuration..."
 mkdir -p ~/.config/awesome
@@ -128,7 +144,7 @@ mkdir -p ~/.config/awesome
 # Copy default config
 cp /etc/xdg/awesome/rc.lua ~/.config/awesome/
 
-# Create awesome configuration
+# Create awesome configuration with PrusaSlicer key binding
 cat > ~/.config/awesome/rc.lua << 'EOF'
 -- awesome configuration file
 pcall(require, "luarocks.loader")
@@ -421,7 +437,11 @@ globalkeys = gears.table.join(
     
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
-              {description = "open CadQuery", group = "launcher"})
+              {description = "open CadQuery", group = "launcher"}),
+    
+    -- PrusaSlicer
+    awful.key({ modkey }, "p", function() awful.spawn(os.getenv("HOME") .. "/launch-prusaslicer.sh") end,
+              {description = "open PrusaSlicer", group = "launcher"})
 )
 
 clientkeys = gears.table.join(
@@ -713,6 +733,7 @@ cat > ~/README-awesome-setup.md << 'EOF'
 - **Super + f**: File manager (pcmanfm)
 - **Super + w**: Web browser (firefox)
 - **Super + c**: CadQuery (cq-editor)
+- **Super + p**: PrusaSlicer (Flatpak)
 - **Super + q**: Main menu
 - **Alt + F4**: Close window
 - **Ctrl + Space**: Toggle Japanese input (fcitx5)
@@ -727,16 +748,23 @@ cat > ~/README-awesome-setup.md << 'EOF'
 ## Audio
 - Use `pavucontrol` to control audio settings
 
+## Flatpak Applications
+- PrusaSlicer: Installed via Flatpak from Flathub
+- To update: `flatpak update`
+- To list installed: `flatpak list`
+
 ## Configuration Files
 - Awesome config: ~/.config/awesome/rc.lua
 - Environment variables: ~/.profile
 - CadQuery launcher: ~/launch-cadquery.sh
+- PrusaSlicer launcher: ~/launch-prusaslicer.sh
 
 ## Restart Required
 Please reboot your system to complete the setup.
 EOF
 
 log "Setup completed successfully!"
+log "PrusaSlicer has been installed via Flatpak and can be launched with Super+p"
 log "Please reboot your system to start using Awesome WM with Japanese support."
 warn "After reboot, select 'Awesome' from the session menu in the login screen."
 log "A README file has been created at ~/README-awesome-setup.md"
@@ -745,4 +773,4 @@ log "A README file has been created at ~/README-awesome-setup.md"
 export LANG=ja_JP.UTF-8
 export LC_ALL=ja_JP.UTF-8
 
-echo -e "${GREEN}Setup Complete!Plz reboot${NC}"
+echo -e "${GREEN}Setup Complete! PrusaSlicer added with Super+p shortcut. Please reboot.${NC}"

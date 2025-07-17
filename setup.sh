@@ -31,11 +31,6 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
-# Check if running as root
-if [[ $EUID -eq 0 ]]; then
-   error "This script should not be run as root"
-   exit 1
-fi
 
 # Ask for sudo password once
 log "Requesting sudo password..."
@@ -70,10 +65,6 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 # Install GNOME Software Plugin for Flatpak (optional, for GUI package management)
 log "Installing GNOME Software Flatpak plugin..."
 sudo apt install -y gnome-software-plugin-flatpak
-
-# Install PrusaSlicer via Flatpak
-log "Installing PrusaSlicer via Flatpak..."
-sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
 
 # Install applications
 log "Installing required applications..."
@@ -770,6 +761,11 @@ cat > ~/README-awesome-setup.md << 'EOF'
 ## Restart Required
 Please reboot your system to complete the setup.
 EOF
+
+
+# Install PrusaSlicer via Flatpak
+log "Installing PrusaSlicer via Flatpak..."
+sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
 
 log "Setup completed successfully!"
 log "Please reboot your system to start using Awesome WM with Japanese support."

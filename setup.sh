@@ -31,6 +31,20 @@ if [[ $EUID -eq 0 ]]; then
    exit 1
 fi
 
+# Check if running as root
+if [[ $EUID -eq 0 ]]; then
+   error "This script should not be run as root"
+   exit 1
+fi
+
+# Ask for sudo password once
+log "Requesting sudo password..."
+sudo -v
+( while true; do sudo -n true; sleep 60; done ) 2>/dev/null &
+SUDO_PID="$!"
+trap 'kill $SUDO_PID' EXIT
+
+
 # Set locale to English temporarily
 export LANG=C
 export LC_ALL=C

@@ -81,8 +81,8 @@ sudo apt install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Install PrusaSlicer via Flatpak
-log "Installing PrusaSlicer via Flatpak..."
-sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
+# log "Installing PrusaSlicer via Flatpak..."
+# sudo flatpak install -y flathub com.prusa3d.PrusaSlicer
 
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."
@@ -128,14 +128,6 @@ source cadquery-env/bin/activate
 python -m cq_editor
 EOF
 chmod +x ~/launch-cadquery.sh
-
-# Create PrusaSlicer launcher script
-log "Creating PrusaSlicer launcher script..."
-cat > ~/launch-prusaslicer.sh << 'EOF'
-#!/bin/bash
-flatpak run com.prusa3d.PrusaSlicer
-EOF
-chmod +x ~/launch-prusaslicer.sh
 
 # Create awesome config directory
 log "Creating awesome configuration..."
@@ -440,8 +432,9 @@ globalkeys = gears.table.join(
               {description = "open CadQuery", group = "launcher"}),
     
     -- PrusaSlicer
-    awful.key({ modkey }, "p", function() awful.spawn(os.getenv("HOME") .. "/launch-prusaslicer.sh") end,
-              {description = "open PrusaSlicer", group = "launcher"})
+    awful.key({ modkey }, "p", function() awful.spawn("flatpak run com.prusa3d.PrusaSlicer") end,
+              {description = "open PrusaSlicer", group = "launcher"}),
+
 )
 
 clientkeys = gears.table.join(

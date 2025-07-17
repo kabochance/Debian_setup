@@ -45,6 +45,18 @@ sudo apt update && sudo apt upgrade -y
 log "Installing Awesome WM and LightDM..."
 sudo apt install -y awesome lightdm
 
+# Install Flatpak
+log "Installing Flatpak..."
+sudo apt install -y flatpak
+
+# Add Flathub repository
+log "Adding Flathub repository..."
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Install GNOME Software Plugin for Flatpak (optional, for GUI package management)
+log "Installing GNOME Software Flatpak plugin..."
+sudo apt install -y gnome-software-plugin-flatpak
+
 # Install applications
 log "Installing required applications..."
 sudo apt install -y \
@@ -75,10 +87,6 @@ sudo apt install -y \
     feh \
     picom
 
-# Install Flatpak and add Flathub repository
-log "Installing Flatpak and adding Flathub..."
-sudo apt install -y flatpak gnome-software-plugin-flatpak
-sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."
@@ -426,11 +434,6 @@ globalkeys = gears.table.join(
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
               {description = "open CadQuery", group = "launcher"})
-    -- PrusaSlicer
-    awful.key({ modkey }, "p", function()
-        awful.spawn("flatpak run com.prusa3d.PrusaSlicer")
-    end, {description = "open PrusaSlicer", group = "launcher"}),
-
 )
 
 clientkeys = gears.table.join(
@@ -723,7 +726,6 @@ cat > ~/README-awesome-setup.md << 'EOF'
 - **Super + w**: Web browser (firefox)
 - **Super + c**: CadQuery (cq-editor)
 - **Super + q**: Main menu
-- **Super + p**: Prusa Slicer
 - **Alt + F4**: Close window
 - **Ctrl + Space**: Toggle Japanese input (fcitx5)
 

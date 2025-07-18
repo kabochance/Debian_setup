@@ -27,12 +27,15 @@ Debian最小構成からawesome WM環境を自動構築するスクリプトで�
 ### ワンライナーでインストール
 
 ```bash
+sudo dhclient
 wget -O - https://raw.githubusercontent.com/kabochance/Debian_setup/main/setup.sh | bash
 ```
 
 ### または手動でダウンロード
 
 ```bash
+sudo dhclient
+
 wget https://raw.githubusercontent.com/kabochance/Debian_setup/main/setup.sh
 chmod +x install.sh
 ./install.sh

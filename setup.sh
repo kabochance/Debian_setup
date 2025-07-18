@@ -647,6 +647,7 @@ awful.spawn.with_shell("udiskie &")
 awful.spawn.with_shell("picom &")
 awful.spawn.with_shell("dunst &")
 awful.spawn.with_shell("diodon &")
+awful.spawn.with_shell("xmodmap -e 'pointer = 3 2 1'")
 EOF
 
 # Create environment variables for Japanese input

@@ -75,6 +75,9 @@ sudo apt install -y \
     feh \
     picom
 
+# download folder
+xdg-mime default pcmanfm.desktop inode/directory
+
 
 # Install Python development packages for CadQuery
 log "Installing Python development packages..."

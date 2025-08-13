@@ -78,6 +78,17 @@ sudo apt install -y \
 # download folder
 xdg-mime default pcmanfm.desktop inode/directory
 
+
+# Install Python development packages for CadQuery
+log "Installing Python development packages..."
+sudo apt install -y \
+    python3-pip \
+    python3-dev \
+    python3-venv \
+    libffi-dev \
+    libssl-dev \
+    build-essential
+
 # Install Japanese fonts and input method
 log "Installing Japanese fonts and fcitx5..."
 sudo apt install -y \
@@ -93,6 +104,15 @@ sudo apt install -y \
 log "Configuring Japanese locale..."
 sudo sed -i 's/# ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
 sudo locale-gen
+
+# Install CadQuery
+log "Installing CadQuery..."
+cd ~
+python3 -m venv cadquery-env
+source cadquery-env/bin/activate
+pip install cadquery cq-editor PySide2 spyder-kernels
+pip install git+https://github.com/meadiode/cq_gears.git@main
+deactivate
 
 # Create CadQuery launcher script
 log "Creating CadQuery launcher script..."

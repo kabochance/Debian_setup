@@ -1,6 +1,6 @@
 # Debian Awesome WM Environment Setup
 
-Debian最小構成からawesome WM環境を自動構築するスクリプトです。
+Debian12最小構成からawesome WM環境,CADqueryを自動構築するスクリプトです。
 
 ## 機能
 
@@ -47,28 +47,46 @@ chmod +x install.sh
 
 2. **Flatpakの導入**
   sudo apt install flatpak
+
   sudo apt install gnome-software-plugin-flatpak # Software centerにFlatpakを追加します（必須ではありません）
+  
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-3. **PrusaSlicerのインストール**
+4. **PrusaSlicerのインストール**
    flatpak install flathub com.prusa3d.PrusaSlicer
+   
    flatpak run com.prusa3d.PrusaSlicer #起動
+   
    ショートカットキーとしてWin+p
    
-4. **alacrittyの設定**
+5. **alacrittyの設定**
    テーマいれるとかマウスの設定とか透過処理とか
 
-5. **ROCmのインストール**
+6. **ROCmのインストール**
 
-6. **ollama**
-   
-## キーバインド
+wget https://repo.radeon.com/amdgpu-install/6.4.3/ubuntu/jammy/amdgpu-install_6.4.60403-1_all.deb
 
-- `Mod4 + Return`: alacritty起動
-- `Mod4 + e`: kate起動
-- `Mod4 + f`: ファイラ起動
-- `Mod4 + w`: firefox起動
-- `Ctrl + Space`: 日本語入力切り替え
+sudo apt install ./amdgpu-install_6.4.60403-1_all.deb
+
+sudo apt update
+
+sudo apt install -y python3-setuptools python3-wheel
+
+sudo usermod -a -G render,video $LOGNAME # Add the current user to the render and video groups
+
+sudo apt install rocm
+
+sudo apt install "linux-headers-$(uname -r)"
+
+sudo apt install amdgpu-dkms
+
+7. **ollama**
+
+sudo apt install curl
+
+wget -O - https://ollama.com/install.sh | bash
+
+ollama run gemma3:27b
 
 ## カスタマイズ
 

@@ -73,7 +73,8 @@ sudo apt install -y \
     udiskie \
     rofi \
     feh \
-    picom
+    picom\
+    zenity
 
 # download folder
 xdg-mime default pcmanfm.desktop inode/directory
@@ -424,7 +425,11 @@ globalkeys = gears.table.join(
     
     -- CadQuery
     awful.key({ modkey }, "c", function() awful.spawn(os.getenv("HOME") .. "/launch-cadquery.sh") end,
-              {description = "open CadQuery", group = "launcher"})
+              {description = "open CadQuery", group = "launcher"}),
+    -- Shutdown system
+    awful.key({ modkey, "Shift" }, "x", function() awful.spawn.with_shell("zenity --question --text='本当にシャットダウンしますか？' && systemctl poweroff") 
+end,
+{description = "shutdown system", group = "system"})
 )
 
 clientkeys = gears.table.join(

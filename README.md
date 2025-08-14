@@ -46,6 +46,7 @@ chmod +x install.sh
 1. **再起動**
 
 2. **Flatpakの導入**
+
   sudo apt install flatpak
 
   sudo apt install gnome-software-plugin-flatpak # Software centerにFlatpakを追加します（必須ではありません）
@@ -53,6 +54,7 @@ chmod +x install.sh
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 4. **PrusaSlicerのインストール**
+
    flatpak install flathub com.prusa3d.PrusaSlicer
    
    flatpak run com.prusa3d.PrusaSlicer #起動
@@ -87,6 +89,8 @@ sudo apt install curl
 wget -O - https://ollama.com/install.sh | bash
 
 ollama run gemma3:27b
+
+ollama run qwen2.5-coder:32b
 
 ## カスタマイズ
 
